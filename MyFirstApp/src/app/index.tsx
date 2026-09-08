@@ -1,98 +1,113 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Image, Pressable, ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+const FEATURED = [
+  { id: '1', title: 'React Native', image: 'https://picsum.photos/seed/rn/160/100', tag: 'Hot' },
+  { id: '2', title: 'TypeScript', image: 'https://picsum.photos/seed/ts/160/100', tag: 'Mới' },
+  { id: '3', title: 'UI/UX Design', image: 'https://picsum.photos/seed/ux/160/100', tag: '' },
+];
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+const SECTIONS = [
+  {
+    title: 'Tin tức', data: [
+      { id: 'a', title: 'React Native ', time: '1 giờ trước' },
+      { id: 'b', title: 'Expo SDK 54 hỗ trợ React 19', time: '3 giờ trước' },
+    ],
+  },
+  {
+    title: 'Nổi bật', data: [
+      { id: 'c', title: 'Tối ưu hiệu năng React Native', time: '1 ngày trước' },
+      { id: 'd', title: 'Flexbox từ A đến Z', time: '2 ngày trước' },
+    ],
+  },
+];
 
 export default function HomeScreen() {
+  const [liked, setLiked] = useState(false);
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={s.safe}>
+      {/* Header */}
+      <View style={s.header}>
+        <Text style={s.headerTitle}>Trang chủ</Text>
+        <Pressable onPress={() => setLiked(l => !l)}>
+          <Text style={{ fontSize: 22 }}>{liked ? '❤️' : '🤍'}</Text>
+        </Pressable>
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Banner */}
+        <Image source={{ uri: 'https://picsum.photos/seed/home/800/300' }} style={s.banner} resizeMode="cover" />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        {/* Thông tin chính */}
+        <View style={s.infoBox}>
+          <Text style={s.infoTitle}>Chào mừng bạn 👋</Text>
+          <Text style={s.infoDesc}>Khám phá các khóa học và bài viết mới nhất.</Text>
+          <Pressable style={s.btn}><Text style={s.btnText}>Khám phá ngay</Text></Pressable>
+        </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        {/* FlatList ngang */}
+        <Text style={s.groupTitle}>Nổi bật</Text>
+        <FlatList
+          data={FEATURED}
+          keyExtractor={i => i.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 12, marginBottom: 20 }}
+          renderItem={({ item }) => (
+            <Pressable style={s.card}>
+              <Image source={{ uri: item.image }} style={s.cardImg} resizeMode="cover" />
+              {item.tag ? <View style={s.tag}><Text style={s.tagText}>{item.tag}</Text></View> : null}
+              <Text style={s.cardTitle}>{item.title}</Text>
+            </Pressable>
+          )}
+        />
+
+        {/* SectionList */}
+        <Text style={s.groupTitle}>Bài viết</Text>
+        <SectionList
+          sections={SECTIONS}
+          keyExtractor={i => i.id}
+          scrollEnabled={false}
+          renderSectionHeader={({ section }) => (
+            <View style={s.secHeader}><Text style={s.secHeaderText}>{section.title}</Text></View>
+          )}
+          renderItem={({ item }) => (
+<Pressable style={s.newsItem}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.newsTitle}>{item.title}</Text>
+                <Text style={s.newsTime}>{item.time}</Text>
+              </View>
+              <Text style={{ fontSize: 20, color: '#ccc' }}>›</Text>
+            </Pressable>
+          )}
+        />
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#f5f6fa' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1a1a1a' },
+  banner: { width: '100%', height: 180 },
+  infoBox: { backgroundColor: '#fff', margin: 16, borderRadius: 12, padding: 16, elevation: 2 },
+  infoTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 6 },
+  infoDesc: { fontSize: 14, color: '#666', marginBottom: 14 },
+  btn: { backgroundColor: '#007AFF', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+  btnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  groupTitle: { fontSize: 16, fontWeight: '700', marginLeft: 16, marginBottom: 10 },
+  card: { width: 150, backgroundColor: '#fff', borderRadius: 10, overflow: 'hidden', elevation: 2 },
+  cardImg: { width: '100%', height: 90 },
+  cardTitle: { fontSize: 13, color: '#333', padding: 8 },
+  tag: { position: 'absolute', top: 6, left: 6, backgroundColor: '#FF3B30', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  tagText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  secHeader: { backgroundColor: '#f0f4ff', paddingHorizontal: 16, paddingVertical: 8 },
+  secHeaderText: { fontSize: 13, fontWeight: '700', color: '#007AFF' },
+  newsItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  newsTitle: { fontSize: 14, color: '#1a1a1a', marginBottom: 4 },
+  newsTime: { fontSize: 12, color: 'hsl(318, 66%, 50%)' },
 });

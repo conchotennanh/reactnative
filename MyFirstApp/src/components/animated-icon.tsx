@@ -40,7 +40,7 @@ export function AnimatedSplashOverlay() {
       entering={splashKeyframe.duration(DURATION).withCallback((finished) => {
         'worklet';
         if (finished) {
-          scheduleOnRN(setVisible, false);
+          scheduleOnRN(() => setVisible(false));
         }
       })}
       style={styles.splashOverlay}>
